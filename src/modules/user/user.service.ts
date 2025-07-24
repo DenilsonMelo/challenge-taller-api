@@ -1,4 +1,8 @@
-import { ConflictException, Injectable } from "@nestjs/common";
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException
+} from "@nestjs/common";
 import { CreateUserDto } from "./dto/create-user.dto";
 import { UpdateUserDto } from "./dto/update-user.dto";
 import { PrismaService } from "src/shared/prisma/prisma.service";
@@ -51,8 +55,8 @@ export class UserService {
     });
   }
 
-  findOne(id: string) {
-    return this.prismaService.user.findUnique({
+  async findOne(id: string) {
+    const user = await this.prismaService.user.findUnique({
       where: { id },
       select: {
         id: true,
@@ -63,13 +67,25 @@ export class UserService {
         updatedAt: true
       }
     });
+
+    if (!user) {
+      throw new NotFoundException("Usuário não encontrado");
+    }
+
+    return user;
   }
 
-  update(id: string, updateUserDto: UpdateUserDto) {
-    return this.prismaService.user.update({
+  async update(id: string, updateUserDto: UpdateUserDto) {
+    const user = await this.prismaService.user.update({
       where: { id },
       data: updateUserDto
     });
+
+    if (!user) {
+      throw new NotFoundException("Usuário não encontrado");
+    }
+
+    return user;
   }
 
   remove(id: string) {
