@@ -1,0 +1,24 @@
+version: "3.9"
+
+services:
+  db_postgres:
+    image: "postgres"
+    container_name: "taller_db"
+    environment:
+      POSTGRES_USER: "root"
+      POSTGRES_PASSWORD: "root"
+      POSTGRES_DB: "taller"
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - catalog-network
+
+volumes:
+  postgres_data:
+  minio_data:
+
+networks:
+  catalog-network:
+    driver: bridge
