@@ -50,6 +50,7 @@ model CartItem {
     productId String
     cartId    String
     total     Float
+    quantity  Int
     product   Product  @relation(fields: [productId], references: [id])
     cart      Cart     @relation(fields: [cartId], references: [id])
     createdAt DateTime @default(now())
