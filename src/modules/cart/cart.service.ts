@@ -1,7 +1,8 @@
 import {
   Injectable,
   NotFoundException,
-  ConflictException
+  ConflictException,
+  BadRequestException
 } from "@nestjs/common";
 import { CreateCartDto } from "./dto/create-cart.dto";
 import { UpdateCartDto } from "./dto/update-cart.dto";
@@ -12,6 +13,22 @@ export class CartService {
   constructor(private readonly prismaService: PrismaService) {}
 
   async create(createCartDto: CreateCartDto) {
+    const user = await this.prismaService.user.findUnique({
+      where: { id: createCartDto.clientId }
+    });
+
+    if (!user) {
+      throw new BadRequestException("Usuário não encontrado");
+    }
+
+    const existingCart = await this.prismaService.cart.findFirst({
+      where: { clientId: createCartDto.clientId }
+    });
+
+    if (existingCart) {
+      throw new ConflictException("Usuário já possui um carrinho ativo");
+    }
+
     return this.prismaService.cart.create({
       data: {
         clientId: createCartDto.clientId,
@@ -36,6 +53,26 @@ export class CartService {
 
   async findAll() {
     return this.prismaService.cart.findMany({
+      include: {
+        cartItems: {
+          include: {
+            product: true
+          }
+        },
+        user: {
+          select: {
+            id: true,
+            name: true,
+            mail: true
+          }
+        }
+      }
+    });
+  }
+
+  async findByClientId(clientId: string) {
+    return this.prismaService.cart.findFirst({
+      where: { clientId },
       include: {
         cartItems: {
           include: {

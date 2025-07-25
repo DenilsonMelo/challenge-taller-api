@@ -91,6 +91,20 @@ export class CartItemService {
     });
   }
 
+  async findByUserId(userId: string) {
+    return this.prismaService.cartItem.findMany({
+      where: {
+        cart: {
+          clientId: userId
+        }
+      },
+      include: {
+        product: true,
+        cart: true
+      }
+    });
+  }
+
   async findOne(id: string) {
     const cartItem = await this.prismaService.cartItem.findUnique({
       where: { id },
