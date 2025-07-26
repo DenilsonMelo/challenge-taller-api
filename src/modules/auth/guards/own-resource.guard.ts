@@ -45,12 +45,12 @@ export class OwnResourceGuard implements CanActivate {
     url: string
   ): Promise<boolean> {
     try {
-      if (url.includes("/cart")) {
-        return await this.validateCartAccess(user, params, body);
-      }
-
       if (url.includes("/cart-item")) {
         return await this.validateCartItemAccess(user, params, body);
+      }
+
+      if (url.includes("/cart")) {
+        return await this.validateCartAccess(user, params, body);
       }
 
       if (url.includes("/order")) {
