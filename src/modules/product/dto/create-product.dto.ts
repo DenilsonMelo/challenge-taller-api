@@ -12,6 +12,6 @@ export class CreateProductDto {
   imageUrl: string;
 
   @IsInt()
-  @Min(0)
+  @Min(1)
   stock: number;
 }

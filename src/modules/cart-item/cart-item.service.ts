@@ -95,7 +95,8 @@ export class CartItemService {
     return this.prismaService.cartItem.findMany({
       where: {
         cart: {
-          clientId: userId
+          clientId: userId,
+          order: null
         }
       },
       include: {

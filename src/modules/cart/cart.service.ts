@@ -22,7 +22,7 @@ export class CartService {
     }
 
     const existingCart = await this.prismaService.cart.findFirst({
-      where: { clientId: createCartDto.clientId }
+      where: { clientId: createCartDto.clientId, order: null }
     });
 
     if (existingCart) {
@@ -72,7 +72,7 @@ export class CartService {
 
   async findByClientId(clientId: string) {
     return this.prismaService.cart.findFirst({
-      where: { clientId },
+      where: { clientId, order: null },
       include: {
         cartItems: {
           include: {
