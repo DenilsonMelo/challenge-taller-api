@@ -58,46 +58,62 @@ export class OrderService {
       }
     }
 
-    const order = await this.prismaService.$transaction(async (prisma) => {
-      const newOrder = await prisma.order.create({
-        data: {
-          cartId: createOrderDto.cartId
-        },
-        include: {
-          cart: {
-            include: {
-              cartItems: {
-                include: {
-                  product: true
-                }
-              },
-              user: {
-                select: {
-                  id: true,
-                  name: true,
-                  mail: true
-                }
+    return await this.prismaService.$transaction(
+      async (prisma) => {
+        const cart = await prisma.cart.findUnique({
+          where: { id: createOrderDto.cartId },
+          include: {
+            cartItems: {
+              include: {
+                product: true
               }
             }
           }
-        }
-      });
+        });
 
-      for (const cartItem of cart.cartItems) {
-        await prisma.product.update({
-          where: { id: cartItem.productId },
-          data: {
-            stock: {
-              decrement: cartItem.quantity
-            }
+        for (const cartItem of cart.cartItems) {
+          const currentProduct = await prisma.product.findUnique({
+            where: { id: cartItem.productId }
+          });
+
+          if (currentProduct.stock < cartItem.quantity) {
+            throw new BadRequestException(
+              `Estoque insuficiente para ${currentProduct.name}. Disponível: ${currentProduct.stock}`
+            );
+          }
+        }
+
+        const newOrder = await prisma.order.create({
+          data: { cartId: createOrderDto.cartId },
+          include: {
+            cart: { include: { cartItems: { include: { product: true } } } }
           }
         });
+
+        for (const cartItem of cart.cartItems) {
+          const result = await prisma.product.updateMany({
+            where: {
+              id: cartItem.productId,
+              stock: { gte: cartItem.quantity }
+            },
+            data: {
+              stock: { decrement: cartItem.quantity }
+            }
+          });
+
+          if (result.count === 0) {
+            throw new ConflictException(
+              `Estoque insuficiente para ${cartItem.product.name} - concorrência detectada`
+            );
+          }
+        }
+
+        return newOrder;
+      },
+      {
+        isolationLevel: "Serializable"
       }
-
-      return newOrder;
-    });
-
-    return order;
+    );
   }
 
   async findAll() {
