@@ -17,14 +17,18 @@ import { Public } from "../auth/decorators/public.decorator";
 import { FileInterceptor } from "@nestjs/platform-express";
 import { MulterFile } from "multer";
 import { ProductPayloadDto } from "./dto/product.payload.dto";
+import { ApiCreatedResponse, ApiOkResponse, ApiTags } from "@nestjs/swagger";
+import { CreateProductDto } from "./dto/create-product.dto";
 
 @Controller("product")
+@ApiTags("Product")
 export class ProductController {
   constructor(private readonly productService: ProductService) {}
 
   @Post()
   @UseInterceptors(FileInterceptor("imageFile"))
   @UseGuards(AdminGuard)
+  @ApiCreatedResponse({ type: ProductPayloadDto })
   create(
     @UploadedFile() imageFile: MulterFile,
     @Body() createProductDto: ProductPayloadDto
@@ -38,12 +42,14 @@ export class ProductController {
 
   @Get()
   @Public()
+  @ApiOkResponse({ type: CreateProductDto, isArray: true })
   findAll() {
     return this.productService.findAll();
   }
 
   @Get(":id")
   @Public()
+  @ApiOkResponse({ type: CreateProductDto })
   findOne(@Param("id") id: string) {
     return this.productService.findOne(id);
   }
@@ -51,6 +57,7 @@ export class ProductController {
   @Patch(":id")
   @UseInterceptors(FileInterceptor("imageFile"))
   @UseGuards(AdminGuard)
+  @ApiOkResponse({ type: ProductPayloadDto })
   update(
     @Param("id") id: string,
     @Body() updateProductDto: ProductPayloadDto,
@@ -70,6 +77,7 @@ export class ProductController {
 
   @Delete(":id")
   @UseGuards(AdminGuard)
+  @ApiOkResponse({ type: CreateProductDto })
   remove(@Param("id") id: string) {
     return this.productService.remove(id);
   }
