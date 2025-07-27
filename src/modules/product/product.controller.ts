@@ -6,22 +6,34 @@ import {
   Patch,
   Param,
   Delete,
-  UseGuards
+  UseGuards,
+  UseInterceptors,
+  UploadedFile,
+  BadRequestException
 } from "@nestjs/common";
 import { ProductService } from "./product.service";
-import { CreateProductDto } from "./dto/create-product.dto";
-import { UpdateProductDto } from "./dto/update-product.dto";
 import { AdminGuard } from "../auth/guards/admin.guard";
 import { Public } from "../auth/decorators/public.decorator";
+import { FileInterceptor } from "@nestjs/platform-express";
+import { MulterFile } from "multer";
+import { ProductPayloadDto } from "./dto/product.payload.dto";
 
 @Controller("product")
 export class ProductController {
   constructor(private readonly productService: ProductService) {}
 
   @Post()
+  @UseInterceptors(FileInterceptor("imageFile"))
   @UseGuards(AdminGuard)
-  create(@Body() createProductDto: CreateProductDto) {
-    return this.productService.create(createProductDto);
+  create(
+    @UploadedFile() imageFile: MulterFile,
+    @Body() createProductDto: ProductPayloadDto
+  ) {
+    if (!imageFile) {
+      throw new BadRequestException("Imagem não enviada");
+    }
+
+    return this.productService.create(createProductDto.data, imageFile);
   }
 
   @Get()
@@ -37,9 +49,23 @@ export class ProductController {
   }
 
   @Patch(":id")
+  @UseInterceptors(FileInterceptor("imageFile"))
   @UseGuards(AdminGuard)
-  update(@Param("id") id: string, @Body() updateProductDto: UpdateProductDto) {
-    return this.productService.update(id, updateProductDto);
+  update(
+    @Param("id") id: string,
+    @Body() updateProductDto: ProductPayloadDto,
+    @UploadedFile() imageFile: MulterFile
+  ) {
+    let productData;
+    try {
+      productData =
+        typeof updateProductDto.data === "string"
+          ? JSON.parse(updateProductDto.data)
+          : updateProductDto.data;
+    } catch (error) {
+      throw new BadRequestException("Dados do produto inválidos");
+    }
+    return this.productService.update(id, productData, imageFile);
   }
 
   @Delete(":id")
