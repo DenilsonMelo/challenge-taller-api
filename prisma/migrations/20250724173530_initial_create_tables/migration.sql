@@ -77,3 +77,15 @@ ALTER TABLE "CartItem" ADD CONSTRAINT "CartItem_cartId_fkey" FOREIGN KEY ("cartI
 
 -- AddForeignKey
 ALTER TABLE "Order" ADD CONSTRAINT "Order_cartId_fkey" FOREIGN KEY ("cartId") REFERENCES "Cart"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- Insert admin user
+INSERT INTO "User" (id, password, mail, name, "userType", "createdAt", "updatedAt")
+VALUES (
+    gen_random_uuid(),
+    '$2b$10$XWv93BmjS84mwc2O0Mjj6ePxR4BHYOqhfD.bOzA9mQaDen/Duk7Iu',
+    'admin@taller.com',
+    'Administrador',
+    'ADMIN',
+    NOW(),
+    NOW()
+) ON CONFLICT (mail) DO NOTHING;
