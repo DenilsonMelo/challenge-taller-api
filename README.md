@@ -125,6 +125,17 @@ Senha: admintaller
 ### 8. Acesse a Documentação
 Visite `http://localhost:3001/api/docs` para explorar a API via Swagger.
 
+## 🧪 Testes
+
+A aplicação possui testes unitários abrangentes para todos os serviços principais:
+
+```bash
+# Executar todos os testes
+npm run test
+```
+
+**Módulos testados:** Auth, User, Product, Cart e CartItem com cobertura completa de cenários de sucesso, tratamento de erros e validações de negócio.
+
 ## 🖥️ Frontend
 
 Foi desenvolvida uma aplicação frontend para consumir esta API, proporcionando uma interface completa para testar todas as funcionalidades.
@@ -151,4 +162,5 @@ Esta implementação demonstra:
 - **Controle rigoroso de estoque** com prevenção de race conditions
 - **Segurança robusta** com autenticação e autorização adequadas
 - **Documentação completa** com Swagger
+- **Testes automatizados** garantindo qualidade na entrega do código
 - **Boas práticas** de desenvolvimento com TypeScript e NestJS
